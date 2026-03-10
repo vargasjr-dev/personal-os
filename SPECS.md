@@ -1,8 +1,8 @@
 # Hardware Specifications - Personal OS Dev Machine
 
-**Purpose:** Development workstation for agent-native operating system with on-device LLM capabilities.
+**Purpose:** Development workstation for assistant-native operating system with on-device LLM capabilities.
 
-**Target Performance:** Run Llama 3.1 70B at 40+ tokens/sec for real-time agent interactions.
+**Target Performance:** Run Llama 3.1 70B at 40+ tokens/sec for real-time assistant interactions.
 
 ---
 
@@ -16,7 +16,7 @@
 - TDP: 170W
 - **Price: $550**
 
-**Why:** Best multi-threaded performance for compilation and parallel agent workloads. Zen 4 architecture is excellent for OS development.
+**Why:** Best multi-threaded performance for compilation and parallel assistant workloads. Zen 4 architecture is excellent for OS development.
 
 ---
 
@@ -178,7 +178,7 @@
 2. **Order parts** (use PCPartPicker for current pricing)
 3. **Build day** (2-3 hours assembly)
 4. **Boot custom kernel** within 24 hours
-5. **Begin agent-native OS development**
+5. **Begin assistant-native OS development**
 
 ---
 
