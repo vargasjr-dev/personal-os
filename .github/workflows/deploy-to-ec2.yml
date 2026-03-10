@@ -1,0 +1,58 @@
+name: Deploy PersonalOS to EC2
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install Rust nightly
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          override: true
+          components: rust-src, llvm-tools-preview
+
+      - name: Install bootimage
+        run: cargo install bootimage
+
+      - name: Build PersonalOS
+        run: cargo bootimage --release
+
+      - name: Configure SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy to EC2
+        env:
+          EC2_USER: ${{ secrets.EC2_USER }}
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+        run: |
+          # Upload new image
+          scp target/x86_64-personal_os/release/bootimage-personal-os.bin \
+            ${EC2_USER}@${EC2_HOST}:/tmp/bootimage-personal-os.bin
+          
+          # Deploy using deployment script
+          ssh ${EC2_USER}@${EC2_HOST} \
+            '/opt/personalos/deploy.sh /tmp/bootimage-personal-os.bin'
+
+      - name: Deployment complete
+        run: |
+          echo "✅ PersonalOS deployed successfully!"
+          echo "Access at: http://${{ secrets.EC2_HOST }}:6080/vnc.html"
