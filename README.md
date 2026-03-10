@@ -8,53 +8,26 @@
 
 ## 🚀 Quick Start
 
-### Prerequisites
-
-Install Rust toolchain:
-```bash
-# Install rustup
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-
-# Install nightly toolchain
-rustup install nightly
-rustup default nightly
-
-# Add required components
-rustup component add rust-src --toolchain nightly
-rustup component add llvm-tools-preview --toolchain nightly
-```
-
-Install QEMU for virtualization:
-```bash
-# Ubuntu/Debian
-sudo apt install qemu-system-x86
-
-# Arch Linux
-sudo pacman -S qemu
-
-# macOS
-brew install qemu
-```
-
-Install bootimage tool:
-```bash
-cargo install bootimage
-```
-
-### Build and Run
+**Get booting in under 5 minutes:**
 
 ```bash
-# Build the OS
-cargo build
+# Clone the repo
+git clone https://github.com/vargasjr-dev/personal-os.git
+cd personal-os
+
+# Run automated setup
+./setup.sh
+source ~/.cargo/env
 
 # Build and run in QEMU
 cargo run
-
-# Build release version
-cargo build --release
 ```
 
-You should see the PersonalOS boot screen in a QEMU window!
+The `setup.sh` script automatically installs Rust (nightly), QEMU, and all dependencies.
+
+**Supported systems:** Ubuntu, Debian, Arch, Fedora, macOS
+
+See [QUICKSTART.md](QUICKSTART.md) for detailed instructions and troubleshooting.
 
 ---
 

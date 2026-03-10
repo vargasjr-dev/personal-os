@@ -1,81 +1,42 @@
 # PersonalOS Quick Start Guide
 
-Get your assistant-native OS booting in QEMU in under 10 minutes.
+Get your assistant-native OS booting in QEMU in under 5 minutes.
 
 ---
 
-## Step 1: Install Rust (5 minutes)
+## Step 1: Clone the Repo
 
 ```bash
-# Install rustup
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-
-# Follow prompts, then:
-source ~/.cargo/env
-
-# Install nightly toolchain
-rustup install nightly
-rustup default nightly
-
-# Add components for bare metal
-rustup component add rust-src --toolchain nightly
-rustup component add llvm-tools-preview --toolchain nightly
-```
-
-**Verify:**
-```bash
-rustc --version
-# Should show: rustc 1.x.x-nightly
-```
-
----
-
-## Step 2: Install QEMU (2 minutes)
-
-**Ubuntu/Debian:**
-```bash
-sudo apt update
-sudo apt install qemu-system-x86
-```
-
-**Arch Linux:**
-```bash
-sudo pacman -S qemu
-```
-
-**macOS:**
-```bash
-brew install qemu
-```
-
-**Windows:**
-Download from [qemu.org](https://www.qemu.org/download/) or use WSL2 with Ubuntu.
-
-**Verify:**
-```bash
-qemu-system-x86_64 --version
-```
-
----
-
-## Step 3: Install bootimage (1 minute)
-
-```bash
-cargo install bootimage
-```
-
-This tool creates bootable disk images from your Rust kernel.
-
----
-
-## Step 4: Clone & Build (2 minutes)
-
-```bash
-# Clone the repo
 git clone https://github.com/vargasjr-dev/personal-os.git
 cd personal-os
+```
 
-# Build and run in QEMU
+---
+
+## Step 2: Run Setup Script
+
+```bash
+./setup.sh
+```
+
+This automatically installs:
+- ✅ Rust toolchain (nightly)
+- ✅ QEMU virtualization
+- ✅ bootimage tool
+- ✅ All required components
+
+**Supported systems:** Ubuntu, Debian, Arch, Fedora, macOS
+
+After setup completes:
+```bash
+source ~/.cargo/env
+```
+
+---
+
+## Step 3: Build & Run
+
+```bash
 cargo run
 ```
 
@@ -107,7 +68,7 @@ System ready. Halting...
 
 ---
 
-## Step 5: Start Hacking! 🚀
+## Step 4: Start Hacking! 🚀
 
 Your OS is booting! Now you can:
 
@@ -143,12 +104,17 @@ Ideas to implement:
 
 ## Troubleshooting
 
+**Setup script failed?**
+- Re-run with verbose output: `bash -x ./setup.sh`
+- Check you have sudo access (needed for QEMU install)
+- On macOS, ensure Homebrew is installed first
+
 **"error: linking with `rust-lld` failed"**
 - Run: `rustup component add llvm-tools-preview --toolchain nightly`
 
 **"QEMU not found"**
 - Make sure QEMU is installed: `qemu-system-x86_64 --version`
-- Add to PATH if needed
+- Re-run setup: `./setup.sh`
 
 **"could not compile `bootloader`"**
 - Ensure you're using nightly: `rustup default nightly`
@@ -157,6 +123,10 @@ Ideas to implement:
 **Build is slow**
 - First build takes 2-5 minutes (compiling bootloader)
 - Subsequent builds are much faster (seconds)
+
+**Manual installation (if setup.sh doesn't work)**
+- Check the script contents: `cat setup.sh`
+- Follow the commands manually for your OS
 
 ---
 
