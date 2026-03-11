@@ -30,23 +30,22 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
+          aws-region: us-east-1
+
+      - name: Generate SSH key for EC2
+        run: |
+          ssh-keygen -t rsa -b 4096 -f deploy_key -N "" -C "personalos-deploy"
+          chmod 600 deploy_key
 
       - name: Create terraform.tfvars
         run: |
           cat > terraform.tfvars <<EOF
-          aws_region = "${{ secrets.AWS_REGION }}"
-          instance_type = "${{ secrets.TF_INSTANCE_TYPE }}"
-          subdomain = "${{ secrets.TF_SUBDOMAIN }}"
+          aws_region = "us-east-1"
+          instance_type = "t2.micro"
+          subdomain = "os.vargasjr.dev"
           ssh_public_key_path = "./deploy_key.pub"
           ssh_private_key_path = "./deploy_key"
           EOF
-
-      - name: Setup SSH key
-        run: |
-          echo "${{ secrets.TF_SSH_PUBLIC_KEY }}" > deploy_key.pub
-          echo "${{ secrets.TF_SSH_PRIVATE_KEY }}" > deploy_key
-          chmod 600 deploy_key
 
       - name: Terraform Init
         run: terraform init
@@ -77,12 +76,70 @@ jobs:
           echo "subdomain=$(terraform output -raw subdomain)" >> $GITHUB_OUTPUT
           echo "vnc_url=$(terraform output -raw vnc_url)" >> $GITHUB_OUTPUT
 
+      - name: Generate GitHub App Token
+        id: app-token
+        run: |
+          # Mint token for vargas-jr GitHub App
+          cd ..
+          TOKEN=$(bash scripts/gh-token.sh vargasjr-dev)
+          echo "token=$TOKEN" >> $GITHUB_OUTPUT
+        env:
+          GITHUB_APP_ID: ${{ secrets.GITHUB_APP_ID }}
+          GITHUB_APP_PRIVATE_KEY_B64: ${{ secrets.GITHUB_APP_PRIVATE_KEY_B64 }}
+
       - name: Update GitHub Secrets
-        uses: gliech/create-github-secret-action@v1
-        with:
-          name: EC2_HOST
-          value: ${{ steps.outputs.outputs.elastic_ip }}
-          pa_token: ${{ secrets.GH_PAT }}
+        run: |
+          # Update EC2_HOST secret using GitHub API
+          ELASTIC_IP="${{ steps.outputs.outputs.elastic_ip }}"
+          
+          # Get public key for encrypting secret
+          PUBLIC_KEY_RESPONSE=$(curl -s -H "Authorization: Bearer ${{ steps.app-token.outputs.token }}" \
+            "https://api.github.com/repos/vargasjr-dev/personal-os/actions/secrets/public-key")
+          
+          PUBLIC_KEY=$(echo "$PUBLIC_KEY_RESPONSE" | jq -r '.key')
+          KEY_ID=$(echo "$PUBLIC_KEY_RESPONSE" | jq -r '.key_id')
+          
+          # Encrypt the secret value using libsodium
+          sudo apt-get update && sudo apt-get install -y libsodium-dev
+          
+          # Use Python for encryption (available in GitHub Actions)
+          python3 << 'PYTHON_SCRIPT'
+          import base64
+          import os
+          from nacl import encoding, public
+          
+          def encrypt_secret(public_key: str, secret_value: str) -> str:
+              public_key = public.PublicKey(public_key.encode("utf-8"), encoding.Base64Encoder())
+              sealed_box = public.SealedBox(public_key)
+              encrypted = sealed_box.encrypt(secret_value.encode("utf-8"))
+              return base64.b64encode(encrypted).decode("utf-8")
+          
+          public_key = os.environ['PUBLIC_KEY']
+          secret_value = os.environ['SECRET_VALUE']
+          encrypted = encrypt_secret(public_key, secret_value)
+          print(encrypted)
+          PYTHON_SCRIPT
+          
+          ENCRYPTED_VALUE=$(PUBLIC_KEY="$PUBLIC_KEY" SECRET_VALUE="$ELASTIC_IP" python3 << 'PYTHON_SCRIPT'
+          import base64
+          import os
+          from nacl import encoding, public
+          
+          public_key = public.PublicKey(os.environ['PUBLIC_KEY'].encode("utf-8"), encoding.Base64Encoder())
+          sealed_box = public.SealedBox(public_key)
+          encrypted = sealed_box.encrypt(os.environ['SECRET_VALUE'].encode("utf-8"))
+          print(base64.b64encode(encrypted).decode("utf-8"))
+          PYTHON_SCRIPT
+          )
+          
+          # Update the secret
+          curl -X PUT \
+            -H "Authorization: Bearer ${{ steps.app-token.outputs.token }}" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/vargasjr-dev/personal-os/actions/secrets/EC2_HOST" \
+            -d "{\"encrypted_value\":\"$ENCRYPTED_VALUE\",\"key_id\":\"$KEY_ID\"}"
+          
+          echo "✅ Updated EC2_HOST secret to: $ELASTIC_IP"
 
       - name: Deployment Summary
         run: |

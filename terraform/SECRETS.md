@@ -19,72 +19,47 @@ For automated Terraform deployment via GitHub Actions, configure these secrets i
    - Your AWS secret access key
    - Generated when you create the access key
 
-3. **AWS_REGION**
-   - Default: `us-east-1`
-   - Or your preferred AWS region
+### GitHub App Credentials (for auto-updating secrets)
 
-### Terraform Variables
+3. **GITHUB_APP_ID**
+   - GitHub App ID for vargas-jr app
+   - Already configured: `1344447`
 
-4. **TF_INSTANCE_TYPE**
-   - EC2 instance type
-   - Default: `t2.micro` (free tier)
-   - Options: `t2.micro`, `t2.small`, `t3.medium`, etc.
-
-5. **TF_SUBDOMAIN**
-   - Your subdomain for PersonalOS
-   - Example: `os.vargasjr.dev`
-
-### SSH Keys
-
-6. **TF_SSH_PUBLIC_KEY**
-   - Contents of your SSH public key
-   - Get it: `cat ~/.ssh/id_rsa.pub`
-   - Used to create AWS key pair for EC2 access
-
-7. **TF_SSH_PRIVATE_KEY**
-   - Contents of your SSH private key
-   - Get it: `cat ~/.ssh/id_rsa`
-   - ⚠️ Keep this secret! Used for deployment only
-
-### GitHub Token (for auto-updating secrets)
-
-8. **GH_PAT** (GitHub Personal Access Token)
-   - Used to auto-update `EC2_HOST` secret after deployment
-   - Create at: GitHub → Settings → Developer settings → Personal access tokens → Tokens (classic)
-   - Scopes needed: `repo` (full control)
-   - Alternative: Use fine-grained token with `secrets: write` permission
+4. **GITHUB_APP_PRIVATE_KEY_B64**
+   - Base64-encoded private key for vargas-jr app
+   - Used to mint tokens for updating repository secrets
 
 ---
 
-## Optional: Existing EC2 Secrets
+## Hardcoded Configuration
 
-If you already have these for manual deployment, they'll be auto-updated:
+The following are hardcoded in the workflow (no secrets needed):
 
-- **EC2_HOST** - Auto-updated to new Elastic IP
-- **EC2_USER** - Should be `ubuntu`
-- **EC2_SSH_KEY** - Should match `TF_SSH_PRIVATE_KEY`
+- **AWS Region:** `us-east-1`
+- **Instance Type:** `t2.micro` (free tier)
+- **Subdomain:** `os.vargasjr.dev`
+- **SSH Keys:** Auto-generated per workflow run
 
 ---
 
-## Quick Setup Script
+## Auto-Updated Secrets
+
+These secrets are automatically updated by the workflow:
+
+- **EC2_HOST** - Set to the new Elastic IP after deployment
+- **EC2_USER** - Should be manually set to `ubuntu` once
+- **EC2_SSH_KEY** - Not needed (SSH key generated per workflow)
+
+---
+
+## Quick Setup
 
 ```bash
-# Generate SSH key if you don't have one
-ssh-keygen -t rsa -b 4096 -f ~/.ssh/personalos_deploy -N ""
-
 # Get your AWS credentials
 aws configure list
 
-# Copy values to clipboard (macOS)
-cat ~/.ssh/personalos_deploy.pub | pbcopy  # TF_SSH_PUBLIC_KEY
-cat ~/.ssh/personalos_deploy | pbcopy      # TF_SSH_PRIVATE_KEY
-
-# Or print them (Linux)
-echo "=== TF_SSH_PUBLIC_KEY ==="
-cat ~/.ssh/personalos_deploy.pub
-echo ""
-echo "=== TF_SSH_PRIVATE_KEY ==="
-cat ~/.ssh/personalos_deploy
+# Verify GitHub App credentials are set
+# GITHUB_APP_ID and GITHUB_APP_PRIVATE_KEY_B64 should already be configured
 ```
 
 ---
