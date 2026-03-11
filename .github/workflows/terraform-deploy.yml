@@ -1,0 +1,115 @@
+name: Deploy Terraform Infrastructure
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'terraform/**'
+      - '.github/workflows/terraform-deploy.yml'
+  workflow_dispatch:
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    
+    defaults:
+      run:
+        working-directory: terraform
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.7.0
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Create terraform.tfvars
+        run: |
+          cat > terraform.tfvars <<EOF
+          aws_region = "${{ secrets.AWS_REGION }}"
+          instance_type = "${{ secrets.TF_INSTANCE_TYPE }}"
+          subdomain = "${{ secrets.TF_SUBDOMAIN }}"
+          ssh_public_key_path = "./deploy_key.pub"
+          ssh_private_key_path = "./deploy_key"
+          EOF
+
+      - name: Setup SSH key
+        run: |
+          echo "${{ secrets.TF_SSH_PUBLIC_KEY }}" > deploy_key.pub
+          echo "${{ secrets.TF_SSH_PRIVATE_KEY }}" > deploy_key
+          chmod 600 deploy_key
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Format Check
+        run: terraform fmt -check
+        continue-on-error: true
+
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Terraform Plan
+        id: plan
+        run: terraform plan -no-color -out=tfplan
+        continue-on-error: true
+
+      - name: Terraform Plan Status
+        if: steps.plan.outcome == 'failure'
+        run: exit 1
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve tfplan
+
+      - name: Get Outputs
+        id: outputs
+        run: |
+          echo "elastic_ip=$(terraform output -raw elastic_ip)" >> $GITHUB_OUTPUT
+          echo "subdomain=$(terraform output -raw subdomain)" >> $GITHUB_OUTPUT
+          echo "vnc_url=$(terraform output -raw vnc_url)" >> $GITHUB_OUTPUT
+
+      - name: Update GitHub Secrets
+        uses: gliech/create-github-secret-action@v1
+        with:
+          name: EC2_HOST
+          value: ${{ steps.outputs.outputs.elastic_ip }}
+          pa_token: ${{ secrets.GH_PAT }}
+
+      - name: Deployment Summary
+        run: |
+          echo "## Terraform Deployment Complete! ✅" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Elastic IP:** \`${{ steps.outputs.outputs.elastic_ip }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Subdomain:** \`${{ steps.outputs.outputs.subdomain }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**VNC URL:** ${{ steps.outputs.outputs.vnc_url }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Next Steps:" >> $GITHUB_STEP_SUMMARY
+          echo "1. Delegate subdomain DNS at your registrar" >> $GITHUB_STEP_SUMMARY
+          echo "2. GitHub secret \`EC2_HOST\` has been auto-updated" >> $GITHUB_STEP_SUMMARY
+          echo "3. Deploy your OS image via the deploy-to-ec2 workflow" >> $GITHUB_STEP_SUMMARY
+
+      - name: Comment on Commit
+        uses: peter-evans/commit-comment@v3
+        with:
+          body: |
+            ## 🚀 Terraform Infrastructure Deployed
+            
+            **Elastic IP:** `${{ steps.outputs.outputs.elastic_ip }}`
+            **Subdomain:** `${{ steps.outputs.outputs.subdomain }}`
+            **VNC URL:** ${{ steps.outputs.outputs.vnc_url }}
+            
+            ✅ GitHub secret `EC2_HOST` has been automatically updated.
+            
+            Access your instance:
+            ```bash
+            ssh -i ~/.ssh/id_rsa ubuntu@${{ steps.outputs.outputs.elastic_ip }}
+            ```

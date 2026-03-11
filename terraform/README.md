@@ -187,6 +187,43 @@ terraform output -raw ssh_command
 
 ---
 
+## Automated Deployment with GitHub Actions
+
+This repo includes a GitHub Actions workflow that automatically deploys Terraform infrastructure on push to main.
+
+### Setup
+
+1. **Configure GitHub Secrets** (see [SECRETS.md](SECRETS.md)):
+   - AWS credentials
+   - Terraform variables
+   - SSH keys
+   - GitHub PAT
+
+2. **Push changes:**
+   ```bash
+   # Any change to terraform/ triggers deployment
+   echo "# update" >> terraform/main.tf
+   git add terraform/
+   git commit -m "Update infrastructure"
+   git push
+   ```
+
+3. **Monitor deployment:**
+   - Check Actions tab in GitHub
+   - Workflow outputs Elastic IP and VNC URL
+   - `EC2_HOST` secret auto-updates
+
+### Benefits
+
+- **Fully automated** - Push to deploy
+- **Reproducible** - Same infrastructure every time
+- **Integrated** - Auto-updates deployment secrets
+- **Auditable** - Full history in GitHub Actions
+
+See [SECRETS.md](SECRETS.md) for detailed setup instructions.
+
+---
+
 ## Destroy Infrastructure
 
 To tear down everything:
