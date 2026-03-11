@@ -1,0 +1,10 @@
+# Example Terraform variables
+# Copy this to terraform.tfvars and customize
+
+aws_region = "us-east-1"
+instance_type = "t2.micro"
+subdomain = "os.vargasjr.dev"
+
+# SSH key paths
+ssh_public_key_path = "~/.ssh/id_rsa.pub"
+ssh_private_key_path = "~/.ssh/id_rsa"
