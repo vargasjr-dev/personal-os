@@ -13,6 +13,7 @@ pub mod interrupts;
 pub mod memory;
 pub mod allocator;
 pub mod task;
+pub mod keyboard;
 
 use core::panic::PanicInfo;
 use bootloader::{entry_point, BootInfo};
@@ -51,7 +52,7 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
 
     let mut executor = task::simple_executor::SimpleExecutor::new();
     executor.spawn(task::Task::new(boot_message()));
-    executor.spawn(task::Task::new(system_ready()));
+    executor.spawn(task::Task::new(keyboard::input_loop()));
     executor.run();
 
     #[cfg(test)]
@@ -62,18 +63,11 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
     }
 }
 
-/// Boot message — first async task in the kernel.
+/// Boot message — first async task, then yields to the input loop.
 async fn boot_message() {
-    println!("System ready. Async executor online.");
-    println!("[INFO] LLM interface initialized");
-    println!("[INFO] Backend: Anthropic API (cloud) OR Local Llama");
-}
-
-/// System ready — second async task, signals boot complete.
-async fn system_ready() {
-    serial_println!("[OK] All boot tasks complete — kernel idle");
+    serial_println!("[OK] All boot tasks complete — input loop active");
+    println!("System ready. Type something:");
     println!();
-    println!("All systems operational. Awaiting input...");
 }
 
 /// Panic handler — prints to VGA and halts.
