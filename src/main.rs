@@ -17,6 +17,7 @@ pub mod keyboard;
 pub mod pci;
 pub mod virtio_net;
 pub mod net;
+pub mod dns;
 
 use core::panic::PanicInfo;
 use bootloader::{entry_point, BootInfo};
