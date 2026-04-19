@@ -8,15 +8,27 @@ mod vga_buffer;
 mod llm;
 pub mod test_framework;
 pub mod interrupts;
+pub mod memory;
 
 use core::panic::PanicInfo;
+use bootloader::{entry_point, BootInfo};
+use x86_64::VirtAddr;
 
-/// Entry point for the kernel
-#[no_mangle]
-pub extern "C" fn _start() -> ! {
-    // Initialize CPU exception handling (GDT → TSS → IDT)
-    // Must happen before anything that could trigger an exception
+entry_point!(kernel_main);
+
+/// Entry point for the kernel — receives BootInfo from the bootloader.
+fn kernel_main(boot_info: &'static BootInfo) -> ! {
+    // Initialize CPU exception handling (GDT → TSS → IDT → PIC → interrupts)
     interrupts::init();
+
+    // Initialize memory management — page tables and frame allocator
+    let phys_mem_offset = VirtAddr::new(boot_info.physical_memory_offset);
+    let mut _mapper = unsafe { memory::init(phys_mem_offset) };
+    let mut _frame_allocator = unsafe {
+        memory::BootInfoFrameAllocator::init(&boot_info.memory_map)
+    };
+
+    serial_println!("[OK] Memory: page tables active, frame allocator ready");
 
     println!("╔═══════════════════════════════════════════════════════════╗");
     println!("║                                                           ║");
@@ -52,7 +64,8 @@ pub extern "C" fn _start() -> ! {
     }
 }
 
-/// Panic handler - called on kernel panic
+/// Panic handler — prints to VGA and halts.
+#[cfg(not(test))]
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
     println!("[PANIC] {}", info);
@@ -61,10 +74,10 @@ fn panic(info: &PanicInfo) -> ! {
     }
 }
 
-/// Test-mode panic handler — reports failure via serial + QEMU exit
+/// Test-mode panic handler — reports failure via serial + QEMU exit.
 #[cfg(test)]
 #[panic_handler]
-fn panic(info: &core::panic::PanicInfo) -> ! {
+fn panic(info: &PanicInfo) -> ! {
     test_framework::test_panic_handler(info)
 }
 
