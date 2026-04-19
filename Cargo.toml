@@ -20,6 +20,8 @@ futures-util = { version = "0.3.28", default-features = false, features = ["allo
 smoltcp = { version = "0.11.0", default-features = false, features = ["proto-ipv4", "proto-dhcpv4", "socket-tcp", "socket-udp", "socket-dns", "alloc", "log"] }
 rustls = { version = "0.23", default-features = false, features = ["ring", "alloc", "logging"] }
 webpki-roots = "0.26"
+serde = { version = "1", default-features = false, features = ["derive", "alloc"] }
+serde_json = { version = "1", default-features = false, features = ["alloc"] }
 
 [profile.dev]
 panic = "abort"
