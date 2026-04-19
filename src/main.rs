@@ -27,6 +27,7 @@ pub mod streaming;
 pub mod shell;
 pub mod context;
 pub mod block;
+pub mod fs;
 
 use core::panic::PanicInfo;
 use bootloader::{entry_point, BootInfo};
