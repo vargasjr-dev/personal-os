@@ -16,6 +16,7 @@ pub mod task;
 pub mod keyboard;
 pub mod pci;
 pub mod virtio_net;
+pub mod net;
 
 use core::panic::PanicInfo;
 use bootloader::{entry_point, BootInfo};
@@ -49,12 +50,15 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
     println!("Kernel booted. Architecture: x86_64");
     println!();
 
-    // Probe for network device
+    // Probe for network device and initialize TCP/IP stack
     match virtio_net::VirtioNet::init() {
-        Some(net) => {
+        Some(net_dev) => {
             serial_println!("[OK] Network: virtio-net ready");
-            println!("Network: virtio-net ({:02x}:{:02x}:{:02x}:{:02x}:{:02x}:{:02x})",
-                net.mac[0], net.mac[1], net.mac[2], net.mac[3], net.mac[4], net.mac[5]);
+            let stack = net::init(&net_dev);
+            serial_println!("[OK] Network: smoltcp TCP/IP stack ready");
+            println!("Network: 10.0.2.15/24 via virtio-net");
+            // Stack is initialized — will be used by HTTP client in Phase 3
+            core::mem::forget(stack); // Keep alive (static lifetime workaround)
         }
         None => {
             serial_println!("[WARN] No virtio-net device found");
