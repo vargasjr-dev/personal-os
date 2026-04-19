@@ -12,6 +12,7 @@ pub mod test_framework;
 pub mod interrupts;
 pub mod memory;
 pub mod allocator;
+pub mod task;
 
 use core::panic::PanicInfo;
 use bootloader::{entry_point, BootInfo};
@@ -38,37 +39,41 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
     serial_println!("[OK] Memory: page tables + heap allocator ready");
 
     println!("╔═══════════════════════════════════════════════════════════╗");
-    println!("║                                                           ║");
     println!("║              PersonalOS - Assistant-Native OS             ║");
-    println!("║                                                           ║");
     println!("║  \"The future of computing starts here.\" ⚔️                ║");
-    println!("║                                                           ║");
     println!("╚═══════════════════════════════════════════════════════════╝");
     println!();
-    println!("Kernel booted successfully!");
-    println!("Architecture: x86_64");
-    println!("LLM Backend: Ready to connect");
+    println!("Kernel booted. Architecture: x86_64");
     println!();
-    
-    // Demo the LLM abstraction layer
-    println!("Testing LLM abstraction layer...");
-    println!();
-    
-    // This will be extended to actually query the LLM
-    // For now, we just show the architecture is ready
-    println!("[INFO] LLM interface initialized");
-    println!("[INFO] Backend: Anthropic API (cloud) OR Local Llama");
-    println!("[INFO] Swap backends via environment/config");
-    println!();
-    
-    println!("System ready. Halting...");
-    
+
+    // Initialize the async executor and run boot tasks
+    serial_println!("[OK] Async executor ready");
+
+    let mut executor = task::simple_executor::SimpleExecutor::new();
+    executor.spawn(task::Task::new(boot_message()));
+    executor.spawn(task::Task::new(system_ready()));
+    executor.run();
+
     #[cfg(test)]
     test_main();
 
     loop {
         x86_64::instructions::hlt();
     }
+}
+
+/// Boot message — first async task in the kernel.
+async fn boot_message() {
+    println!("System ready. Async executor online.");
+    println!("[INFO] LLM interface initialized");
+    println!("[INFO] Backend: Anthropic API (cloud) OR Local Llama");
+}
+
+/// System ready — second async task, signals boot complete.
+async fn system_ready() {
+    serial_println!("[OK] All boot tasks complete — kernel idle");
+    println!();
+    println!("All systems operational. Awaiting input...");
 }
 
 /// Panic handler — prints to VGA and halts.
