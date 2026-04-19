@@ -7,12 +7,17 @@
 mod vga_buffer;
 mod llm;
 pub mod test_framework;
+pub mod interrupts;
 
 use core::panic::PanicInfo;
 
 /// Entry point for the kernel
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
+    // Initialize CPU exception handling (GDT → TSS → IDT)
+    // Must happen before anything that could trigger an exception
+    interrupts::init();
+
     println!("╔═══════════════════════════════════════════════════════════╗");
     println!("║                                                           ║");
     println!("║              PersonalOS - Assistant-Native OS             ║");
