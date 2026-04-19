@@ -17,3 +17,4 @@ Cargo.lock
 
 # QEMU
 *.log
+.internal/
