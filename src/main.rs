@@ -23,6 +23,7 @@ pub mod http;
 pub mod json;
 pub mod anthropic;
 pub mod secrets;
+pub mod streaming;
 
 use core::panic::PanicInfo;
 use bootloader::{entry_point, BootInfo};
