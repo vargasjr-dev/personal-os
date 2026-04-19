@@ -18,6 +18,7 @@ pub mod pci;
 pub mod virtio_net;
 pub mod net;
 pub mod dns;
+pub mod tls;
 
 use core::panic::PanicInfo;
 use bootloader::{entry_point, BootInfo};
