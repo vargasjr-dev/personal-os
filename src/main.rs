@@ -4,11 +4,14 @@
 #![test_framework(crate::test_framework::test_runner)]
 #![reexport_test_harness_main = "test_main"]
 
+extern crate alloc;
+
 mod vga_buffer;
 mod llm;
 pub mod test_framework;
 pub mod interrupts;
 pub mod memory;
+pub mod allocator;
 
 use core::panic::PanicInfo;
 use bootloader::{entry_point, BootInfo};
@@ -23,12 +26,16 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
 
     // Initialize memory management — page tables and frame allocator
     let phys_mem_offset = VirtAddr::new(boot_info.physical_memory_offset);
-    let mut _mapper = unsafe { memory::init(phys_mem_offset) };
-    let mut _frame_allocator = unsafe {
+    let mut mapper = unsafe { memory::init(phys_mem_offset) };
+    let mut frame_allocator = unsafe {
         memory::BootInfoFrameAllocator::init(&boot_info.memory_map)
     };
 
-    serial_println!("[OK] Memory: page tables active, frame allocator ready");
+    // Initialize the kernel heap (maps virtual pages → physical frames)
+    allocator::init_heap(&mut mapper, &mut frame_allocator)
+        .expect("heap initialization failed");
+
+    serial_println!("[OK] Memory: page tables + heap allocator ready");
 
     println!("╔═══════════════════════════════════════════════════════════╗");
     println!("║                                                           ║");
