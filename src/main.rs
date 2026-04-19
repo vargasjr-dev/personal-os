@@ -1,11 +1,12 @@
 #![no_std]
 #![no_main]
 #![feature(custom_test_frameworks)]
-#![test_framework(crate::test_framework)]
+#![test_framework(crate::test_framework::test_runner)]
 #![reexport_test_harness_main = "test_main"]
 
 mod vga_buffer;
 mod llm;
+pub mod test_framework;
 
 use core::panic::PanicInfo;
 
@@ -55,15 +56,30 @@ fn panic(info: &PanicInfo) -> ! {
     }
 }
 
+/// Test-mode panic handler — reports failure via serial + QEMU exit
 #[cfg(test)]
-fn test_runner(tests: &[&dyn Fn()]) {
-    println!("Running {} tests", tests.len());
-    for test in tests {
-        test();
-    }
+#[panic_handler]
+fn panic(info: &core::panic::PanicInfo) -> ! {
+    test_framework::test_panic_handler(info)
+}
+
+// ─── Unit Tests ──────────────────────────────────────────────────────────────
+
+#[test_case]
+fn test_trivial_assertion() {
+    assert_eq!(1, 1);
 }
 
 #[test_case]
-fn trivial_assertion() {
-    assert_eq!(1, 1);
+fn test_vga_println() {
+    // Verify println! doesn't panic (VGA buffer works)
+    println!("test_vga_println output");
+}
+
+#[test_case]
+fn test_vga_many_lines() {
+    // Test scrolling — write more lines than the VGA buffer holds (25)
+    for i in 0..50 {
+        println!("line {}", i);
+    }
 }
