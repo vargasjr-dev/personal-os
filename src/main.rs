@@ -14,6 +14,8 @@ pub mod memory;
 pub mod allocator;
 pub mod task;
 pub mod keyboard;
+pub mod pci;
+pub mod virtio_net;
 
 use core::panic::PanicInfo;
 use bootloader::{entry_point, BootInfo};
@@ -45,6 +47,20 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
     println!("╚═══════════════════════════════════════════════════════════╝");
     println!();
     println!("Kernel booted. Architecture: x86_64");
+    println!();
+
+    // Probe for network device
+    match virtio_net::VirtioNet::init() {
+        Some(net) => {
+            serial_println!("[OK] Network: virtio-net ready");
+            println!("Network: virtio-net ({:02x}:{:02x}:{:02x}:{:02x}:{:02x}:{:02x})",
+                net.mac[0], net.mac[1], net.mac[2], net.mac[3], net.mac[4], net.mac[5]);
+        }
+        None => {
+            serial_println!("[WARN] No virtio-net device found");
+            println!("Network: not available");
+        }
+    }
     println!();
 
     // Initialize the async executor and run boot tasks
