@@ -28,6 +28,7 @@ pub mod shell;
 pub mod context;
 pub mod block;
 pub mod fs;
+pub mod file_ops;
 
 use core::panic::PanicInfo;
 use bootloader::{entry_point, BootInfo};
