@@ -33,6 +33,7 @@ pub mod config;
 pub mod chat_view;
 pub mod intent;
 pub mod executor;
+pub mod display;
 
 use core::panic::PanicInfo;
 use bootloader::{entry_point, BootInfo};
