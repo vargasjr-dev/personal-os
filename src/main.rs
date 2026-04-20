@@ -36,7 +36,6 @@ pub mod executor;
 pub mod display;
 pub mod agent;
 pub mod awareness;
-pub mod permissions;
 pub mod proactive;
 pub mod continuity;
 
