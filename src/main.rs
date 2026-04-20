@@ -30,6 +30,7 @@ pub mod block;
 pub mod fs;
 pub mod file_ops;
 pub mod config;
+pub mod chat_view;
 
 use core::panic::PanicInfo;
 use bootloader::{entry_point, BootInfo};
@@ -96,11 +97,15 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
     }
 }
 
-/// Boot message — first async task, then yields to the input loop.
+/// Boot message — initializes the chat view as the default UI.
+/// Phase 6: The kernel boots to a conversation, not a shell prompt.
 async fn boot_message() {
-    serial_println!("[OK] All boot tasks complete — input loop active");
-    println!("System ready. Type something:");
-    println!();
+    serial_println!("[OK] All boot tasks complete — chat view active");
+
+    let mut chat = chat_view::ChatView::new();
+    chat.init();
+
+    serial_println!("[OK] Chat view initialized — assistant-native boot complete");
 }
 
 /// Panic handler — prints to VGA and halts.
