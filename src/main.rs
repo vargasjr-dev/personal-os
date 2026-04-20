@@ -35,6 +35,7 @@ pub mod intent;
 pub mod executor;
 pub mod display;
 pub mod agent;
+pub mod awareness;
 
 use core::panic::PanicInfo;
 use bootloader::{entry_point, BootInfo};
