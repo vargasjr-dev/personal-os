@@ -37,6 +37,7 @@ pub mod display;
 pub mod agent;
 pub mod awareness;
 pub mod permissions;
+pub mod proactive;
 
 use core::panic::PanicInfo;
 use bootloader::{entry_point, BootInfo};
