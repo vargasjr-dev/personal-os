@@ -41,6 +41,7 @@ pub mod continuity;
 pub mod ui_mutability;
 pub mod framebuffer;
 pub mod font;
+pub mod compositor;
 
 use core::panic::PanicInfo;
 use bootloader::{entry_point, BootInfo};
