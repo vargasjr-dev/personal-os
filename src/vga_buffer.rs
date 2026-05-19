@@ -57,6 +57,17 @@ pub struct Writer {
 }
 
 impl Writer {
+    /// Write a raw byte+color directly to a specific cell, bypassing
+    /// scroll logic. Used by the framebuffer driver.
+    pub fn write_raw_cell(&mut self, row: usize, col: usize, byte: u8, fg: Color, bg: Color) {
+        if row < BUFFER_HEIGHT && col < BUFFER_WIDTH {
+            self.buffer.chars[row][col].write(ScreenChar {
+                ascii_character: byte,
+                color_code: ColorCode::new(fg, bg),
+            });
+        }
+    }
+
     pub fn write_byte(&mut self, byte: u8) {
         match byte {
             b'\n' => self.new_line(),
@@ -143,4 +154,34 @@ pub fn _print(args: fmt::Arguments) {
     interrupts::without_interrupts(|| {
         WRITER.lock().write_fmt(args).unwrap();
     });
+}
+
+/// Write a raw CP437 byte with explicit fg/bg colors to a specific
+/// (row, col) cell — no scroll, no ASCII filtering. For framebuffer use.
+pub fn write_raw_cell(row: usize, col: usize, byte: u8, fg: Color, bg: Color) {
+    use x86_64::instructions::interrupts;
+    interrupts::without_interrupts(|| {
+        WRITER.lock().write_raw_cell(row, col, byte, fg, bg);
+    });
+}
+
+/// Read the raw ScreenChar at (row, col). Used by the framebuffer to
+/// merge new pixels into existing cells without clobbering neighbours.
+pub fn read_cell_colors(row: usize, col: usize) -> (Color, Color) {
+    use x86_64::instructions::interrupts;
+    interrupts::without_interrupts(|| {
+        let writer = WRITER.lock();
+        if row < 25 && col < 80 {
+            let sc = writer.buffer.chars[row][col].read();
+            let code = sc.color_code.0;
+            let fg_u8 = code & 0x0F;
+            let bg_u8 = (code >> 4) & 0x07; // 3 bits for bg (no blink)
+            // Safety: Color is repr(u8) with values 0–15
+            let fg = unsafe { core::mem::transmute::<u8, Color>(fg_u8) };
+            let bg = unsafe { core::mem::transmute::<u8, Color>(bg_u8) };
+            (fg, bg)
+        } else {
+            (Color::White, Color::Black)
+        }
+    })
 }
