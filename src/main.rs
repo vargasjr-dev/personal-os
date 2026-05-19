@@ -39,6 +39,7 @@ pub mod awareness;
 pub mod proactive;
 pub mod continuity;
 pub mod ui_mutability;
+pub mod framebuffer;
 
 use core::panic::PanicInfo;
 use bootloader::{entry_point, BootInfo};
