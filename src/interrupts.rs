@@ -5,8 +5,9 @@
 /// handlers for CPU exceptions and hardware interrupts.
 ///
 /// Hardware interrupts covered:
-/// - Timer (PIC line 0) — fires ~18.2 Hz, drives preemptive scheduling
-/// - Keyboard (PIC line 1) — PS/2 scancode → key event translation
+/// - Timer    (PIC line 0)  — fires ~18.2 Hz, drives preemptive scheduling
+/// - Keyboard (PIC line 1)  — PS/2 scancode → key event translation
+/// - Mouse    (PIC2 line 4) — PS/2 auxiliary, IRQ12 → mouse.rs packet queue
 ///
 /// References: Intel SDM Vol. 3A, Chapter 6; OSDev PIC wiki
 
@@ -32,8 +33,10 @@ pub static PICS: Mutex<ChainedPics> =
 #[derive(Debug, Clone, Copy)]
 #[repr(u8)]
 pub enum InterruptIndex {
-    Timer = PIC_1_OFFSET,
+    Timer    = PIC_1_OFFSET,
     Keyboard = PIC_1_OFFSET + 1,
+    /// PS/2 Mouse — IRQ12 on PIC2 line 4 → vector PIC_2_OFFSET + 4.
+    Mouse    = PIC_2_OFFSET + 4,
 }
 
 impl InterruptIndex {
@@ -69,6 +72,10 @@ lazy_static! {
         // Hardware: Keyboard (IRQ 1)
         idt[InterruptIndex::Keyboard.as_usize()]
             .set_handler_fn(keyboard_interrupt_handler);
+
+        // Hardware: PS/2 Mouse (IRQ 12, PIC2 line 4)
+        idt[InterruptIndex::Mouse.as_usize()]
+            .set_handler_fn(mouse_interrupt_handler);
 
         idt
     };
@@ -124,6 +131,19 @@ extern "x86-interrupt" fn keyboard_interrupt_handler(
     unsafe {
         PICS.lock()
             .notify_end_of_interrupt(InterruptIndex::Keyboard.as_u8());
+    }
+}
+
+/// PS/2 Mouse interrupt (IRQ 12).
+/// Reads one byte from port 0x60 and hands it to the mouse module.
+extern "x86-interrupt" fn mouse_interrupt_handler(
+    _stack_frame: InterruptStackFrame,
+) {
+    crate::mouse::handle_interrupt();
+
+    unsafe {
+        PICS.lock()
+            .notify_end_of_interrupt(InterruptIndex::Mouse.as_u8());
     }
 }
 

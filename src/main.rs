@@ -44,6 +44,7 @@ pub mod font;
 pub mod compositor;
 pub mod conversation_ui;
 pub mod status_bar;
+pub mod mouse;
 
 use core::panic::PanicInfo;
 use bootloader::{entry_point, BootInfo};
