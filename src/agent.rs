@@ -25,6 +25,7 @@ use crate::intent::{self, Intent, IntentResult};
 use crate::executor;
 use crate::display;
 use crate::config::Config;
+use crate::ui_mutability::{self, UiState};
 
 /// Agent state — the runtime context for the autonomy loop.
 pub struct Agent {
@@ -38,6 +39,8 @@ pub struct Agent {
     max_history: usize,
     /// Whether the agent is active.
     active: bool,
+    /// Mutable UI state — the assistant reshapes the interface.
+    pub ui_state: UiState,
 }
 
 /// A record of an executed intent.
@@ -64,7 +67,18 @@ impl Agent {
             intent_history: Vec::new(),
             max_history: 50,
             active: true,
+            ui_state: UiState::default(),
         }
+    }
+
+    /// Current input prompt prefix — varies by active UI mode.
+    pub fn prompt_prefix(&self) -> &'static str {
+        self.ui_state.mode.prompt_prefix()
+    }
+
+    /// Current response prefix — varies by active UI mode.
+    pub fn response_prefix(&self) -> &'static str {
+        self.ui_state.mode.response_prefix()
     }
 
     /// Execute one cycle of the agent loop.
@@ -87,12 +101,18 @@ impl Agent {
         let exec_result = match &intent {
             Intent::None => IntentResult::ok(""),
             _ => {
-                // Check for display intents first
+                // Check for display or UI mutability intents first
                 let action_part = extract_action(claude_response);
                 if let Some((action, args)) = action_part {
                     if action.starts_with("display_") {
                         if let Some(cmd) = display::parse_display_intent(&action, &args) {
                             display::execute_display(&cmd)
+                        } else {
+                            executor::execute(&intent, &mut self.config)
+                        }
+                    } else if action.starts_with("ui_") {
+                        if let Some(ui_intent) = ui_mutability::parse_ui_intent(&action, &args) {
+                            ui_mutability::execute_ui_intent(ui_intent, &mut self.ui_state)
                         } else {
                             executor::execute(&intent, &mut self.config)
                         }
