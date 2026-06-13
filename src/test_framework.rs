@@ -8,6 +8,7 @@
 ///   - Integration tests: tests/*.rs (each is a separate kernel binary)
 
 use core::fmt;
+use crate::{serial_print, serial_println};
 
 /// Exit codes for QEMU's isa-debug-exit device
 /// The actual exit code is (value << 1) | 1, so:
@@ -80,20 +81,28 @@ impl fmt::Write for SerialPort {
 
 #[macro_export]
 macro_rules! serial_print {
-    ($($arg:tt)*) => {
-        {
-            use core::fmt::Write;
-            let mut serial = $crate::test_framework::SerialPort;
-            write!(serial, $($arg)*).unwrap();
-        }
-    };
+    ($($arg:tt)*) => ({
+        use core::fmt::Write;
+        let mut serial = $crate::test_framework::SerialPort;
+        write!(serial, $($arg)*).unwrap();
+    });
 }
 
 #[macro_export]
 macro_rules! serial_println {
-    () => ($crate::serial_print!("\n"));
-    ($($arg:tt)*) => {
-        $crate::serial_print!($($arg)*);
-        $crate::serial_print!("\n");
-    };
+    () => ({
+        use core::fmt::Write;
+        let mut serial = $crate::test_framework::SerialPort;
+        write!(serial, "\n").unwrap();
+    });
+    ($fmt:expr) => ({
+        use core::fmt::Write;
+        let mut serial = $crate::test_framework::SerialPort;
+        write!(serial, concat!($fmt, "\n")).unwrap();
+    });
+    ($fmt:expr, $($arg:tt)*) => ({
+        use core::fmt::Write;
+        let mut serial = $crate::test_framework::SerialPort;
+        write!(serial, concat!($fmt, "\n"), $($arg)*).unwrap();
+    });
 }

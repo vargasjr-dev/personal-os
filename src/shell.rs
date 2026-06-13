@@ -188,6 +188,14 @@ pub enum ShellOutput {
         bytes_ready: usize,
         prompt: String,
     },
+    /// Conversation was cleared.
+    Cleared,
+    /// Streaming response started.
+    StreamStart,
+    /// A streamed token chunk arrived.
+    StreamChunk(String),
+    /// Streaming response finished.
+    StreamEnd,
 }
 
 // ─── Tests ──────────────────────────────────────────────────────────────────

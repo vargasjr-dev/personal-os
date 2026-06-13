@@ -6,6 +6,7 @@
 /// The actual packet TX/RX comes in the next PR (smoltcp integration).
 /// This PR establishes the device detection and initialization protocol.
 
+use crate::serial_println;
 use crate::pci::{self, PciDevice};
 
 /// Virtio device status flags (per virtio spec 1.1, §2.1)
@@ -78,7 +79,7 @@ impl VirtioNet {
         let mut mac = [0u8; 6];
         for i in 0..6 {
             unsafe {
-                let port = x86_64::instructions::port::Port::<u8>::new(io_base + 20 + i as u16);
+                let mut port = x86_64::instructions::port::Port::<u8>::new(io_base + 20 + i as u16);
                 mac[i] = port.read();
             }
         }

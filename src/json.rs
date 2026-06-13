@@ -13,6 +13,7 @@
 
 use alloc::string::String;
 use alloc::vec::Vec;
+use alloc::vec;
 use serde::{Deserialize, Serialize};
 
 // Re-export core serde_json functions for kernel use

@@ -86,11 +86,4 @@ impl LlmBackend for AnthropicBackend {
     }
 }
 
-/// Example usage:
-/// ```
-/// let mut backend = AnthropicBackend::new();
-/// backend.set_api_key("sk-ant-...");
-/// backend.initialize()?;
-/// let response = backend.query("What is the meaning of life?")?;
-/// println!("{}", response.text);
-/// ```
+

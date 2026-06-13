@@ -6,6 +6,7 @@
 /// This is the foundation for the chat interface, I/O multiplexing,
 /// and eventually the LLM request pipeline — all as async tasks.
 
+use crate::serial_println;
 use alloc::boxed::Box;
 use core::{
     future::Future,

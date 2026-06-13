@@ -47,6 +47,9 @@ use crate::vga_buffer::{Color, write_raw_cell};
 pub const FB_WIDTH: usize = 80;
 /// Logical pixel height (= VGA rows × 2, using half-block chars).
 pub const FB_HEIGHT: usize = 50;
+/// Pixel aliases used by mouse.rs for cursor bounds checking.
+pub const SCREEN_PX_W: usize = FB_WIDTH;
+pub const SCREEN_PX_H: usize = FB_HEIGHT;
 /// VGA text rows.
 const VGA_ROWS: usize = 25;
 /// VGA text columns.

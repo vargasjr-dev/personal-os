@@ -12,6 +12,7 @@
 ///   Gateway: 10.0.2.2
 ///   DNS:     10.0.2.3
 
+use crate::serial_println;
 use alloc::vec;
 use alloc::vec::Vec;
 use smoltcp::iface::{Config, Interface, SocketSet};

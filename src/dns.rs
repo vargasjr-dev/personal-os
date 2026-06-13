@@ -9,6 +9,7 @@
 /// When the full virtqueue TX/RX is implemented, this will use real
 /// DNS queries over UDP port 53.
 
+use crate::serial_println;
 use alloc::string::String;
 use smoltcp::wire::Ipv4Address;
 

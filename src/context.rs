@@ -319,3 +319,22 @@ mod tests {
         }
     }
 }
+
+/// System status snapshot used by the dashboard UI.
+pub struct SystemContext {
+    pub running_tasks: usize,
+    pub open_files: usize,
+    pub conversation_turns: usize,
+    pub context_fill_percent: usize,
+}
+
+impl SystemContext {
+    pub fn snapshot() -> Self {
+        SystemContext {
+            running_tasks: 1,
+            open_files: 0,
+            conversation_turns: 0,
+            context_fill_percent: 0,
+        }
+    }
+}

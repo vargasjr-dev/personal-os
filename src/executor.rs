@@ -67,7 +67,7 @@ fn execute_read_file(path: &str) -> IntentResult {
                 &format!("Read {} ({} bytes)", path, content.len()),
                 &content,
             ),
-            Err(FileError::NotFound) => IntentResult::err(&format!("File not found: {}", path)),
+            Err(FileError::NotFound(_)) => IntentResult::err(&format!("File not found: {}", path)),
             Err(e) => IntentResult::err(&format!("Error reading {}: {:?}", path, e)),
         }
     }

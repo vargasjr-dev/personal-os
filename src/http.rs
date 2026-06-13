@@ -61,8 +61,7 @@ impl Request {
             headers: Vec::new(),
             body: Some(String::from(body)),
         };
-        req.header("Content-Type", "application/json");
-        req
+        req.header("Content-Type", "application/json")
     }
 
     /// Add a header.

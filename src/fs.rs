@@ -10,6 +10,7 @@
 ///
 /// Phase 5, Item 1 — the kernel can organize persistent data.
 
+use alloc::string::ToString;
 use alloc::string::String;
 use alloc::vec::Vec;
 

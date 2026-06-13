@@ -142,8 +142,9 @@ macro_rules! print {
 
 #[macro_export]
 macro_rules! println {
-    () => ($crate::print!("\n"));
-    ($($arg:tt)*) => ($crate::print!("{}\n", format_args!($($arg)*)));
+    () => ($crate::vga_buffer::_print(format_args!("\n")));
+    ($fmt:expr) => ($crate::vga_buffer::_print(format_args!(concat!($fmt, "\n"))));
+    ($fmt:expr, $($arg:tt)*) => ($crate::vga_buffer::_print(format_args!(concat!($fmt, "\n"), $($arg)*)));
 }
 
 #[doc(hidden)]

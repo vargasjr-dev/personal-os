@@ -18,6 +18,7 @@
 ///
 /// Phase 6, Item 1 — Natural language → Claude interprets → action.
 
+use alloc::string::ToString;
 use alloc::string::String;
 use alloc::vec::Vec;
 use alloc::format;

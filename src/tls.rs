@@ -10,9 +10,9 @@
 /// Currently provides the TLS configuration and client connector.
 /// The actual TCP transport integration happens in the HTTP client (Phase 3 Item 4).
 
+use crate::serial_println;
 use alloc::sync::Arc;
-use alloc::vec::Vec;
-use rustls::{ClientConfig, RootCertStore};
+use rustls::ClientConfig;
 
 /// Build a TLS client configuration with Mozilla's trusted root certs.
 ///
@@ -20,21 +20,7 @@ use rustls::{ClientConfig, RootCertStore};
 /// certificate authorities are legitimate, so we can verify that
 /// api.anthropic.com is really Anthropic and not an impersonator.
 pub fn client_config() -> Arc<ClientConfig> {
-    let mut root_store = RootCertStore::empty();
-
-    // Add Mozilla's trusted root certificates
-    root_store.extend(webpki_roots::TLS_SERVER_ROOTS.iter().cloned());
-
-    serial_println!(
-        "[TLS] Loaded {} trusted root certificates",
-        root_store.len()
-    );
-
-    let config = ClientConfig::builder()
-        .with_root_certificates(root_store)
-        .with_no_client_auth();
-
-    Arc::new(config)
+    todo!("TLS requires a ring/aws-lc-rs crypto provider — Phase 9")
 }
 
 /// Known TLS endpoints the kernel may connect to.

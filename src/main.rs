@@ -1,7 +1,8 @@
 #![no_std]
 #![no_main]
 #![feature(custom_test_frameworks)]
-#![test_framework(crate::test_framework::test_runner)]
+#![feature(abi_x86_interrupt)]
+#![test_runner(crate::test_framework::test_runner)]
 #![reexport_test_harness_main = "test_main"]
 
 extern crate alloc;

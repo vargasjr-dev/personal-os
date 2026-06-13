@@ -159,6 +159,10 @@ impl ChatView {
                 crate::println!();
                 self.show_prompt();
             }
+            Some(ShellOutput::Empty) | Some(ShellOutput::Echo(_)) |
+            Some(ShellOutput::Backspace) | Some(ShellOutput::PendingRequest { .. }) => {
+                // Handled by lower-level display or no visible output needed
+            }
             None => {
                 // Character buffered, no output yet
             }

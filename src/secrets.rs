@@ -8,6 +8,7 @@
 /// with LLM endpoints. This module provides a simple key-value
 /// store with security-conscious access patterns.
 
+use crate::serial_println;
 use alloc::collections::BTreeMap;
 use alloc::string::String;
 use spin::Mutex;
