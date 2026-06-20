@@ -51,6 +51,13 @@ jobs:
 
       - name: Run tests
         run: cargo test
+        env:
+          # Force --cfg test into every rustc invocation including the
+          # build-std sysroot pass, so the standalone-sysroot core and
+          # alloc's test-dep core share the same fingerprint hash.
+          # Without this, build-std compiles core twice with different
+          # hashes (E0152 duplicate lang item).
+          RUSTFLAGS: "--cfg test"
 
   lint:
     name: Lint
