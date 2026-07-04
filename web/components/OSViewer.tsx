@@ -93,6 +93,7 @@ export default function OSViewer({ ec2Host }: { ec2Host: string }) {
 
         <div className="mt-6 text-center text-gray-500 text-sm">
           <p>Built with Rust 🦀 | Powered by AI 🤖 | Hosted on AWS ☁️</p>
+          <p className="mt-2">&copy; 2026 VargasJR LLC. All rights reserved.</p>
           <p className="mt-2">
             <a 
               href="https://github.com/vargasjr-dev/personal-os" 
