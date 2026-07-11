@@ -62,14 +62,17 @@ impl Client {
     /// JSON body. The caller is responsible for sending it over the
     /// network (once virtio-net TX/RX is wired).
     pub fn build_request(&self, messages: &[Message]) -> Result<Request, ClientError> {
+        #[cfg(test)] crate::serial_println!("[DEBUG] anthropic: build start");
         let request_body = AnthropicRequest {
             model: self.model.clone(),
             max_tokens: self.max_tokens,
             messages: messages.to_vec(),
         };
+        #[cfg(test)] crate::serial_println!("[DEBUG] anthropic: body ready");
 
         let body_json = json::to_string(&request_body)
             .map_err(|_| ClientError::SerializationError)?;
+        #[cfg(test)] crate::serial_println!("[DEBUG] anthropic: json ready");
 
         let req = Request::post(API_HOST, API_PATH, &body_json)
             .header("x-api-key", &self.api_key)
@@ -145,8 +148,11 @@ mod tests {
 
     #[test_case]
     fn test_build_simple_request() {
+        crate::serial_println!("[DEBUG] anthropic test: before client");
         let client = Client::new("sk-ant-test123");
+        crate::serial_println!("[DEBUG] anthropic test: before build");
         let req = client.build_simple("Hello from the kernel!").unwrap();
+        crate::serial_println!("[DEBUG] anthropic test: after build");
         let bytes = req.to_bytes();
         let text = core::str::from_utf8(&bytes).unwrap();
         assert!(text.contains("POST /v1/messages HTTP/1.1"));
