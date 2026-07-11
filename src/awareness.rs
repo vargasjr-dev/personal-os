@@ -270,10 +270,10 @@ impl Awareness {
         prompt.push_str(&format!("  Intents processed: {}\n", self.resources.intents_processed));
 
         // Recent events
-        let recent: Vec<_> = self.event_log.iter().rev().take(5).collect();
-        if !recent.is_empty() {
+        if !self.event_log.is_empty() {
             prompt.push_str("\n### Recent Events\n");
-            for event in recent.iter().rev() {
+            let start = self.event_log.len().saturating_sub(5);
+            for event in &self.event_log[start..] {
                 prompt.push_str(&format!("  [tick {}] {}\n", event.tick, event.description));
             }
         }
