@@ -239,8 +239,11 @@ mod tests {
 
     #[test_case]
     fn test_agent_cycle_no_intent() {
+        crate::serial_println!("[DEBUG] no-intent: before agent");
         let mut agent = Agent::new();
+        crate::serial_println!("[DEBUG] no-intent: after agent");
         let result = agent.cycle("Hello! How can I help you today?");
+        crate::serial_println!("[DEBUG] no-intent: after cycle");
         assert_eq!(result.intent, Intent::None);
         assert_eq!(result.cycle, 1);
         assert_eq!(agent.stats().cycle_count, 1);
