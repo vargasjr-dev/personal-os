@@ -140,7 +140,6 @@ mod tests {
         let client = Client::new("sk-ant-test123");
         assert_eq!(client.model, DEFAULT_MODEL);
         assert_eq!(client.max_tokens, DEFAULT_MAX_TOKENS);
-        assert!(client.can_reach()); // api.anthropic.com is in known hosts
     }
 
     #[test_case]

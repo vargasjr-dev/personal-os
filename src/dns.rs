@@ -43,6 +43,7 @@ pub fn resolve(domain: &str) -> DnsResult {
     for &(host, ip) in KNOWN_HOSTS {
         if domain == host {
             let addr = Ipv4Address::new(ip[0], ip[1], ip[2], ip[3]);
+            #[cfg(not(test))]
             serial_println!("[DNS] {} → {}", domain, addr);
             return DnsResult::Resolved(addr);
         }
@@ -51,6 +52,7 @@ pub fn resolve(domain: &str) -> DnsResult {
     // For any unknown host in QEMU user-mode, we can route through
     // the gateway (10.0.2.2) which acts as a NAT proxy.
     // But without real DNS, we can't resolve arbitrary domains yet.
+    #[cfg(not(test))]
     serial_println!("[DNS] {} → NOT FOUND (real DNS not yet available)", domain);
     DnsResult::NotFound(String::from(domain))
 }
