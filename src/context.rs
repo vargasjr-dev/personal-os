@@ -289,7 +289,7 @@ mod tests {
 
         // Pinned message should survive
         let api_msgs = ctx.to_api_messages();
-        assert_eq!(ctx.pinned.len(), 1);
+        assert!(ctx.messages.iter().any(|message| message.pinned));
         assert!(!api_msgs.is_empty());
     }
 
