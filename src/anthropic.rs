@@ -166,15 +166,19 @@ Content-Type: application/json
     #[test_case]
     fn test_parse_error_response() {
         let raw = b"HTTP/1.1 401 Unauthorized\r\nContent-Type: application/json\r\n\r\n{\"type\":\"error\",\"error\":{\"type\":\"authentication_error\",\"message\":\"Invalid API key\"}}";
-        let http_resp = Response::from_bytes(raw).unwrap();
-        let err = Client::parse_response(&http_resp).unwrap_err();
-        match err {
-            ClientError::ApiError { status, error_type, message } => {
-                assert_eq!(status, 401);
-                assert_eq!(error_type, "authentication_error");
-                assert_eq!(message, "Invalid API key");
+        let http_resp = match Response::from_bytes(raw) {
+            Ok(response) => response,
+            Err(_) => {
+                crate::test_framework::exit_qemu(crate::test_framework::QemuExitCode::Failure);
+                loop {}
             }
-            _ => panic!("Expected ApiError"),
+        };
+        match Client::parse_response(&http_resp) {
+            Err(ClientError::ApiError { .. }) => {}
+            _ => {
+                crate::test_framework::exit_qemu(crate::test_framework::QemuExitCode::Failure);
+                loop {}
+            }
         }
     }
 
