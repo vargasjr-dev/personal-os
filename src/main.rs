@@ -101,6 +101,7 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
 
     let mut executor = task::simple_executor::SimpleExecutor::new();
     executor.spawn(task::Task::new(boot_message()));
+    #[cfg(not(test))]
     executor.spawn(task::Task::new(keyboard::input_loop()));
     executor.run();
 
