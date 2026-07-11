@@ -169,6 +169,7 @@ pub fn extract_text(events: &[StreamEvent]) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use alloc::vec;
 
     #[test_case]
     fn test_parse_text_delta() {
