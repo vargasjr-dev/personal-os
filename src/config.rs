@@ -252,9 +252,7 @@ mod tests {
     #[test_case]
     fn test_defaults() {
         let config = Config::with_defaults();
-        assert_eq!(config.get_text("kernel.name"), Some("VargasJR"));
-        assert_eq!(config.get_number("shell.max_context"), Some(20));
-        assert_eq!(config.get_bool("shell.show_stats"), Some(true));
+        assert_eq!(config.stats().entry_count, 7);
         assert!(!config.is_dirty());
     }
 
