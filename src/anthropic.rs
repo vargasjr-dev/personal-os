@@ -157,8 +157,12 @@ mod tests {
         let bytes = req.to_bytes();
         crate::serial_println!("[DEBUG] anthropic test: after bytes");
         let text = core::str::from_utf8(&bytes).unwrap();
-        crate::serial_println!("[DEBUG] anthropic test: text ready");
-        assert!(text.contains("POST /v1/messages HTTP/1.1"));
+        crate::serial_println!("[DEBUG] anthropic test: text ready len={}", text.len());
+        crate::serial_println!("[DEBUG] anthropic test: text={}", text);
+        if !text.contains("POST /v1/messages HTTP/1.1") {
+            crate::serial_println!("[DEBUG] anthropic test: method missing");
+            crate::test_framework::exit_qemu(crate::test_framework::QemuExitCode::Failure);
+        }
         crate::serial_println!("[DEBUG] anthropic test: method ok");
         assert!(text.contains("x-api-key: sk-ant-test123"));
         crate::serial_println!("[DEBUG] anthropic test: key ok");
