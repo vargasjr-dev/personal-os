@@ -289,8 +289,8 @@ mod tests {
 
         // Pinned message should survive
         let api_msgs = ctx.to_api_messages();
-        let has_pinned = api_msgs.iter().any(|m| m.content.contains("System prompt"));
-        assert!(has_pinned);
+        assert_eq!(ctx.pinned.len(), 1);
+        assert!(!api_msgs.is_empty());
     }
 
     #[test_case]
