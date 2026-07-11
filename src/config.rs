@@ -10,7 +10,6 @@
 ///
 /// Phase 5, Item 3 — FINAL filesystem item.
 
-use alloc::collections::BTreeMap;
 use alloc::string::String;
 use alloc::vec::Vec;
 
@@ -22,8 +21,9 @@ pub const CONFIG_BACKUP_PATH: &str = "/config.toml.bak";
 
 /// Configuration store — typed key-value persistence.
 pub struct Config {
-    /// Key-value entries.
-    entries: BTreeMap<String, ConfigValue>,
+    /// Key-value entries. The config is intentionally small, so a linear map
+    /// avoids the allocator overhead of a tree in the kernel.
+    entries: Vec<(String, ConfigValue)>,
     /// Whether the config has unsaved changes.
     dirty: bool,
     /// Number of loads performed.
@@ -49,7 +49,7 @@ impl Config {
     /// Create a new empty config.
     pub fn new() -> Self {
         Self {
-            entries: BTreeMap::new(),
+            entries: Vec::new(),
             dirty: false,
             load_count: 0,
             save_count: 0,
@@ -59,33 +59,27 @@ impl Config {
     /// Create with default settings.
     pub fn with_defaults() -> Self {
         let mut config = Self::new();
-        #[cfg(test)] crate::serial_println!("[DEBUG] config: empty");
         config.set("kernel.name", ConfigValue::Text(String::from("VargasJR")));
-        #[cfg(test)] crate::serial_println!("[DEBUG] config: kernel.name");
         config.set("kernel.version", ConfigValue::Text(String::from("0.5.0")));
-        #[cfg(test)] crate::serial_println!("[DEBUG] config: kernel.version");
         config.set("shell.max_context", ConfigValue::Number(20));
-        #[cfg(test)] crate::serial_println!("[DEBUG] config: shell.max_context");
         config.set("shell.show_stats", ConfigValue::Bool(true));
-        #[cfg(test)] crate::serial_println!("[DEBUG] config: shell.show_stats");
         config.set("network.timeout_ms", ConfigValue::Number(30000));
-        #[cfg(test)] crate::serial_println!("[DEBUG] config: network.timeout_ms");
         config.set("llm.model", ConfigValue::Text(String::from("claude-sonnet-4-20250514")));
-        #[cfg(test)] crate::serial_println!("[DEBUG] config: llm.model");
         config.set("llm.max_tokens", ConfigValue::Number(4096));
-        #[cfg(test)] crate::serial_println!("[DEBUG] config: llm.max_tokens");
         config.dirty = false; // Defaults don't count as dirty
         config
     }
 
     /// Get a value by key.
     pub fn get(&self, key: &str) -> Option<&ConfigValue> {
-        self.entries.get(key)
+        self.entries.iter()
+            .find(|(entry_key, _)| entry_key == key)
+            .map(|(_, value)| value)
     }
 
     /// Get a string value.
     pub fn get_text(&self, key: &str) -> Option<&str> {
-        match self.entries.get(key) {
+        match self.get(key) {
             Some(ConfigValue::Text(s)) => Some(s),
             Some(ConfigValue::Secret(s)) => Some(s),
             _ => None,
@@ -94,7 +88,7 @@ impl Config {
 
     /// Get a number value.
     pub fn get_number(&self, key: &str) -> Option<i64> {
-        match self.entries.get(key) {
+        match self.get(key) {
             Some(ConfigValue::Number(n)) => Some(*n),
             _ => None,
         }
@@ -102,7 +96,7 @@ impl Config {
 
     /// Get a boolean value.
     pub fn get_bool(&self, key: &str) -> Option<bool> {
-        match self.entries.get(key) {
+        match self.get(key) {
             Some(ConfigValue::Bool(b)) => Some(*b),
             _ => None,
         }
@@ -110,7 +104,13 @@ impl Config {
 
     /// Set a value (marks config as dirty).
     pub fn set(&mut self, key: &str, value: ConfigValue) {
-        self.entries.insert(String::from(key), value);
+        if let Some((_, existing)) = self.entries.iter_mut()
+            .find(|(entry_key, _)| entry_key == key)
+        {
+            *existing = value;
+        } else {
+            self.entries.push((String::from(key), value));
+        }
         self.dirty = true;
     }
 
@@ -121,7 +121,9 @@ impl Config {
 
     /// Remove a key.
     pub fn remove(&mut self, key: &str) -> Option<ConfigValue> {
-        let removed = self.entries.remove(key);
+        let index = self.entries.iter()
+            .position(|(entry_key, _)| entry_key == key);
+        let removed = index.map(|i| self.entries.remove(i).1);
         if removed.is_some() {
             self.dirty = true;
         }
@@ -130,7 +132,7 @@ impl Config {
 
     /// Check if a key exists.
     pub fn has(&self, key: &str) -> bool {
-        self.entries.contains_key(key)
+        self.entries.iter().any(|(entry_key, _)| entry_key == key)
     }
 
     /// Whether config has unsaved changes.
@@ -196,7 +198,7 @@ impl Config {
                 ConfigValue::Text(String::from(raw_value))
             };
 
-            config.entries.insert(String::from(key), value);
+            config.set(key, value);
         }
 
         config.dirty = false;
@@ -217,8 +219,8 @@ impl Config {
             dirty: self.dirty,
             load_count: self.load_count,
             save_count: self.save_count,
-            secret_count: self.entries.values()
-                .filter(|v| matches!(v, ConfigValue::Secret(_)))
+            secret_count: self.entries.iter()
+                .filter(|(_, v)| matches!(v, ConfigValue::Secret(_)))
                 .count(),
         }
     }
