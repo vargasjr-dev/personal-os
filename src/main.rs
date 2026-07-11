@@ -55,17 +55,28 @@ entry_point!(kernel_main);
 
 /// Entry point for the kernel — receives BootInfo from the bootloader.
 fn kernel_main(boot_info: &'static BootInfo) -> ! {
+    #[cfg(test)]
+    serial_println!("[DEBUG] kernel entry");
+
     // Initialize CPU exception handling (GDT → TSS → IDT → PIC → interrupts)
     interrupts::init();
+    #[cfg(test)]
+    serial_println!("[DEBUG] interrupts ready");
 
     // Initialize memory management — page tables and frame allocator
     let phys_mem_offset = VirtAddr::new(boot_info.physical_memory_offset);
     let mut mapper = unsafe { memory::init(phys_mem_offset) };
+    #[cfg(test)]
+    serial_println!("[DEBUG] page tables ready");
     let mut frame_allocator = unsafe {
         memory::BootInfoFrameAllocator::init(&boot_info.memory_map)
     };
+    #[cfg(test)]
+    serial_println!("[DEBUG] frame allocator ready");
 
     // Initialize the kernel heap (maps virtual pages → physical frames)
+    #[cfg(test)]
+    serial_println!("[DEBUG] heap starting");
     allocator::init_heap(&mut mapper, &mut frame_allocator)
         .expect("heap initialization failed");
 
