@@ -148,14 +148,28 @@ mod tests {
         let client = Client::new("sk-ant-test123");
         let req = client.build_simple("Hello from the kernel!").unwrap();
         let bytes = req.to_bytes();
-        assert!(bytes.windows(b"POST /v1/messages HTTP/1.1".len())
-            .any(|window| window == b"POST /v1/messages HTTP/1.1"));
-        assert!(bytes.windows(b"x-api-key: sk-ant-test123".len())
-            .any(|window| window == b"x-api-key: sk-ant-test123"));
-        assert!(bytes.windows(b"anthropic-version: 2023-06-01".len())
-            .any(|window| window == b"anthropic-version: 2023-06-01"));
-        assert!(bytes.windows(b"Hello from the kernel!".len())
-            .any(|window| window == b"Hello from the kernel!"));
+        let fail = || crate::test_framework::exit_qemu(
+            crate::test_framework::QemuExitCode::Failure,
+        );
+        if !bytes.starts_with(b"POST /v1/messages HTTP/1.1") {
+            fail();
+        }
+        if !req.headers.iter().any(|(key, value)| {
+            key == "x-api-key" && value == "sk-ant-test123"
+        }) {
+            fail();
+        }
+        if !req.headers.iter().any(|(key, value)| {
+            key == "anthropic-version" && value == "2023-06-01"
+        }) {
+            fail();
+        }
+        if !req.body.as_ref().map(|body| body.as_bytes()
+            .windows(b"Hello from the kernel!".len())
+            .any(|window| window == b"Hello from the kernel!")
+        ).unwrap_or(false) {
+            fail();
+        }
     }
 
     #[test_case]
