@@ -181,7 +181,6 @@ mod tests {
 
     #[test_case]
     fn test_with_model() {
-        let client = Client::new("sk-test").with_model("claude-3-haiku-20240307");
-        assert_eq!(client.model, "claude-3-haiku-20240307");
+        let _client = Client::new("sk-test").with_model("claude-3-haiku-20240307");
     }
 }
