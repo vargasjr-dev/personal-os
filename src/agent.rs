@@ -90,18 +90,12 @@ impl Agent {
     ///   response → parse → execute → report
     pub fn cycle(&mut self, claude_response: &str) -> AgentCycleResult {
         self.cycle_count += 1;
-        #[cfg(test)]
-        crate::serial_println!("[DEBUG] agent cycle: start");
 
         // Step 1: Parse intent from Claude's response
         let intent = intent::parse_intent(claude_response);
-        #[cfg(test)]
-        crate::serial_println!("[DEBUG] agent cycle: parsed");
 
         // Step 2: Strip markers for clean display text
         let display_text = intent::strip_markers(claude_response);
-        #[cfg(test)]
-        crate::serial_println!("[DEBUG] agent cycle: stripped");
 
         // Step 3: Execute the intent
         let exec_result = match &intent {
@@ -130,8 +124,6 @@ impl Agent {
                 }
             }
         };
-        #[cfg(test)]
-        crate::serial_println!("[DEBUG] agent cycle: executed");
 
         // Step 4: Record in history
         let record = IntentRecord {
@@ -148,8 +140,6 @@ impl Agent {
         while self.intent_history.len() > self.max_history {
             self.intent_history.remove(0);
         }
-        #[cfg(test)]
-        crate::serial_println!("[DEBUG] agent cycle: recorded");
 
         // Step 5: Build result
         AgentCycleResult {

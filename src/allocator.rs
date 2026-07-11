@@ -19,9 +19,9 @@ use linked_list_allocator::LockedHeap;
 /// Chosen to avoid collisions with other mapped regions.
 pub const HEAP_START: usize = 0x_4444_4444_0000;
 
-/// Size of the kernel heap: 100 KiB.
-/// Enough for early kernel bootstrap. Can be grown later by mapping more pages.
-pub const HEAP_SIZE: usize = 100 * 1024;
+/// Size of the kernel heap: 1 MiB.
+/// Enough for heap-backed kernel services and the full in-kernel test suite.
+pub const HEAP_SIZE: usize = 1024 * 1024;
 
 /// The global allocator used by Rust's `alloc` crate.
 /// LockedHeap wraps a linked-list allocator in a spinlock for interrupt safety.
