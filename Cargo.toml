@@ -8,7 +8,7 @@ edition = "2021"
 bootloader = { version = "0.9.23", features = ["map_physical_memory"] }
 volatile = "0.2.6"
 spin = "0.5.2"
-x86_64 = "0.14.2"
+x86_64 = { version = "0.14.13", default-features = false, features = ["instructions"] }
 uart_16550 = "0.2.0"
 pic8259 = "0.10.1"
 pc-keyboard = "0.7.0"
@@ -24,9 +24,6 @@ serde = { version = "1", default-features = false, features = ["derive", "alloc"
 serde_json = { version = "1", default-features = false, features = ["alloc"] }
 
 [profile.dev]
-panic = "abort"
-
-[profile.test]
 panic = "abort"
 
 [profile.release]
