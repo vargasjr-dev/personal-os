@@ -173,12 +173,23 @@ impl ContinuityStore {
 
     /// Search memories by content (simple substring match).
     pub fn search(&self, query: &str) -> Vec<&Memory> {
-        let query_lower = query.to_ascii_lowercase();
+        fn contains_ignore_ascii_case(haystack: &str, needle: &str) -> bool {
+            let needle = needle.as_bytes();
+            if needle.is_empty() {
+                return true;
+            }
+            haystack.as_bytes().windows(needle.len()).any(|window| {
+                window.iter().zip(needle).all(|(left, right)| {
+                    left.to_ascii_lowercase() == right.to_ascii_lowercase()
+                })
+            })
+        }
+
         self.memories
             .iter()
             .filter(|m| {
-                m.content.to_ascii_lowercase().contains(&query_lower)
-                    || m.key.to_ascii_lowercase().contains(&query_lower)
+                contains_ignore_ascii_case(&m.content, query)
+                    || contains_ignore_ascii_case(&m.key, query)
             })
             .collect()
     }
