@@ -153,7 +153,9 @@ mod tests {
         crate::serial_println!("[DEBUG] anthropic test: before build");
         let req = client.build_simple("Hello from the kernel!").unwrap();
         crate::serial_println!("[DEBUG] anthropic test: after build");
+        crate::serial_println!("[DEBUG] anthropic test: before bytes");
         let bytes = req.to_bytes();
+        crate::serial_println!("[DEBUG] anthropic test: after bytes");
         let text = core::str::from_utf8(&bytes).unwrap();
         assert!(text.contains("POST /v1/messages HTTP/1.1"));
         assert!(text.contains("x-api-key: sk-ant-test123"));

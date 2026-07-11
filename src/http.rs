@@ -72,16 +72,19 @@ impl Request {
 
     /// Serialize to HTTP/1.1 wire format.
     pub fn to_bytes(&self) -> Vec<u8> {
+        #[cfg(test)] crate::serial_println!("[DEBUG] http: serialize start");
         let mut buf = format!(
             "{} {} HTTP/1.1\r\nHost: {}\r\n",
             self.method.as_str(),
             self.path,
             self.host
         );
+        #[cfg(test)] crate::serial_println!("[DEBUG] http: start line ready");
 
         for (key, value) in &self.headers {
             buf.push_str(&format!("{}: {}\r\n", key, value));
         }
+        #[cfg(test)] crate::serial_println!("[DEBUG] http: headers ready");
 
         if let Some(body) = &self.body {
             buf.push_str(&format!("Content-Length: {}\r\n", body.len()));
@@ -90,6 +93,7 @@ impl Request {
         } else {
             buf.push_str("\r\n");
         }
+        #[cfg(test)] crate::serial_println!("[DEBUG] http: body ready");
 
         buf.into_bytes()
     }
