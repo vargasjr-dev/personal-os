@@ -157,10 +157,15 @@ mod tests {
         let bytes = req.to_bytes();
         crate::serial_println!("[DEBUG] anthropic test: after bytes");
         let text = core::str::from_utf8(&bytes).unwrap();
+        crate::serial_println!("[DEBUG] anthropic test: text ready");
         assert!(text.contains("POST /v1/messages HTTP/1.1"));
+        crate::serial_println!("[DEBUG] anthropic test: method ok");
         assert!(text.contains("x-api-key: sk-ant-test123"));
+        crate::serial_println!("[DEBUG] anthropic test: key ok");
         assert!(text.contains("anthropic-version: 2023-06-01"));
+        crate::serial_println!("[DEBUG] anthropic test: version ok");
         assert!(text.contains("Hello from the kernel!"));
+        crate::serial_println!("[DEBUG] anthropic test: prompt ok");
     }
 
     #[test_case]
