@@ -66,6 +66,8 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
     };
 
     // Initialize the kernel heap (maps virtual pages → physical frames)
+    #[cfg(test)]
+    serial_println!("[DEBUG] heap initialization starting");
     allocator::init_heap(&mut mapper, &mut frame_allocator)
         .expect("heap initialization failed");
 
