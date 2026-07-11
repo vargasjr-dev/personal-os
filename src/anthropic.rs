@@ -62,10 +62,6 @@ impl Client {
     /// JSON body. The caller is responsible for sending it over the
     /// network (once virtio-net TX/RX is wired).
     pub fn build_request(&self, messages: &[Message]) -> Result<Request, ClientError> {
-        if !self.can_reach() {
-            return Err(ClientError::Unreachable);
-        }
-
         let request_body = AnthropicRequest {
             model: self.model.clone(),
             max_tokens: self.max_tokens,
