@@ -154,10 +154,7 @@ mod tests {
 
     #[test_case]
     fn test_parse_success_response() {
-        let raw = br#"HTTP/1.1 200 OK
-Content-Type: application/json
-
-{"id":"msg_123","type":"message","role":"assistant","content":[{"type":"text","text":"Hello!"}],"model":"claude-sonnet-4-20250514","stop_reason":"end_turn"}"#;
+        let raw = b"HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\"id\":\"msg_123\",\"type\":\"message\",\"role\":\"assistant\",\"content\":[{\"type\":\"text\",\"text\":\"Hello!\"}],\"model\":\"claude-sonnet-4-20250514\",\"stop_reason\":\"end_turn\"}";
         let http_resp = Response::from_bytes(raw).unwrap();
         let parsed = Client::parse_response(&http_resp).unwrap();
         assert_eq!(Client::extract_text(&parsed), Some(String::from("Hello!")));
