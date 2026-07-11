@@ -148,11 +148,14 @@ mod tests {
         let client = Client::new("sk-ant-test123");
         let req = client.build_simple("Hello from the kernel!").unwrap();
         let bytes = req.to_bytes();
-        let text = core::str::from_utf8(&bytes).unwrap();
-        assert!(text.contains("POST /v1/messages HTTP/1.1"));
-        assert!(text.contains("x-api-key: sk-ant-test123"));
-        assert!(text.contains("anthropic-version: 2023-06-01"));
-        assert!(text.contains("Hello from the kernel!"));
+        assert!(bytes.windows(b"POST /v1/messages HTTP/1.1".len())
+            .any(|window| window == b"POST /v1/messages HTTP/1.1"));
+        assert!(bytes.windows(b"x-api-key: sk-ant-test123".len())
+            .any(|window| window == b"x-api-key: sk-ant-test123"));
+        assert!(bytes.windows(b"anthropic-version: 2023-06-01".len())
+            .any(|window| window == b"anthropic-version: 2023-06-01"));
+        assert!(bytes.windows(b"Hello from the kernel!".len())
+            .any(|window| window == b"Hello from the kernel!"));
     }
 
     #[test_case]
