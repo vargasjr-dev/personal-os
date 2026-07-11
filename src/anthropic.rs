@@ -165,10 +165,7 @@ Content-Type: application/json
 
     #[test_case]
     fn test_parse_error_response() {
-        let raw = br#"HTTP/1.1 401 Unauthorized
-Content-Type: application/json
-
-{"type":"error","error":{"type":"authentication_error","message":"Invalid API key"}}"#;
+        let raw = b"HTTP/1.1 401 Unauthorized\r\nContent-Type: application/json\r\n\r\n{\"type\":\"error\",\"error\":{\"type\":\"authentication_error\",\"message\":\"Invalid API key\"}}";
         let http_resp = Response::from_bytes(raw).unwrap();
         let err = Client::parse_response(&http_resp).unwrap_err();
         match err {
