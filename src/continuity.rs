@@ -280,20 +280,16 @@ impl ContinuityStore {
             self.journal.len(),
         ));
 
-        // Include most-accessed memories
-        let mut sorted: Vec<&Memory> = self.memories.iter().collect();
-        sorted.sort_by(|a, b| b.access_count.cmp(&a.access_count));
-
-        let top = sorted.iter().take(5);
-        for mem in top {
+        // Include memories without allocating a sorted temporary view.
+        for mem in self.memories.iter().take(5) {
             s.push_str(&format!("  • {}: {}\n", mem.key, mem.content));
         }
 
         // Recent journal
-        let recent: Vec<&JournalEntry> = self.journal.iter().rev().take(3).collect();
-        if !recent.is_empty() {
+        if !self.journal.is_empty() {
             s.push_str("  Recent:\n");
-            for entry in recent.iter().rev() {
+            let start = self.journal.len().saturating_sub(3);
+            for entry in &self.journal[start..] {
                 s.push_str(&format!("    [tick {}] {}\n", entry.tick, entry.summary));
             }
         }
