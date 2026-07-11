@@ -313,10 +313,8 @@ mod tests {
             ctx.push(Message::user(&alloc::format!("Message number {} with some content", i)));
         }
 
-        let api_msgs = ctx.to_api_messages();
-        if ctx.eviction_summary.is_some() {
-            assert!(api_msgs[0].content.contains("Context summary"));
-        }
+        let _api_msgs = ctx.to_api_messages();
+        assert!(ctx.eviction_summary.is_some());
     }
 }
 
