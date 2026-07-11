@@ -138,8 +138,10 @@ mod tests {
     #[test_case]
     fn test_client_creation() {
         let client = Client::new("sk-ant-test123");
-        assert_eq!(client.model, DEFAULT_MODEL);
-        assert_eq!(client.max_tokens, DEFAULT_MAX_TOKENS);
+        if client.model != DEFAULT_MODEL || client.max_tokens != DEFAULT_MAX_TOKENS {
+            crate::test_framework::exit_qemu(crate::test_framework::QemuExitCode::Failure);
+            loop {}
+        }
     }
 
     #[test_case]
