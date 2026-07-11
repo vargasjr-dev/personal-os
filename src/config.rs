@@ -59,13 +59,21 @@ impl Config {
     /// Create with default settings.
     pub fn with_defaults() -> Self {
         let mut config = Self::new();
+        #[cfg(test)] crate::serial_println!("[DEBUG] config: empty");
         config.set("kernel.name", ConfigValue::Text(String::from("VargasJR")));
+        #[cfg(test)] crate::serial_println!("[DEBUG] config: kernel.name");
         config.set("kernel.version", ConfigValue::Text(String::from("0.5.0")));
+        #[cfg(test)] crate::serial_println!("[DEBUG] config: kernel.version");
         config.set("shell.max_context", ConfigValue::Number(20));
+        #[cfg(test)] crate::serial_println!("[DEBUG] config: shell.max_context");
         config.set("shell.show_stats", ConfigValue::Bool(true));
+        #[cfg(test)] crate::serial_println!("[DEBUG] config: shell.show_stats");
         config.set("network.timeout_ms", ConfigValue::Number(30000));
+        #[cfg(test)] crate::serial_println!("[DEBUG] config: network.timeout_ms");
         config.set("llm.model", ConfigValue::Text(String::from("claude-sonnet-4-20250514")));
+        #[cfg(test)] crate::serial_println!("[DEBUG] config: llm.model");
         config.set("llm.max_tokens", ConfigValue::Number(4096));
+        #[cfg(test)] crate::serial_println!("[DEBUG] config: llm.max_tokens");
         config.dirty = false; // Defaults don't count as dirty
         config
     }
