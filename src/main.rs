@@ -71,42 +71,44 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
 
     serial_println!("[OK] Memory: page tables + heap allocator ready");
 
-    println!("╔═══════════════════════════════════════════════════════════╗");
-    println!("║              PersonalOS - Assistant-Native OS             ║");
-    println!("║  \"The future of computing starts here.\" ⚔️                ║");
-    println!("╚═══════════════════════════════════════════════════════════╝");
-    println!();
-    println!("Kernel booted. Architecture: x86_64");
-    println!();
-
-    // Probe for network device and initialize TCP/IP stack
-    match virtio_net::VirtioNet::init() {
-        Some(net_dev) => {
-            serial_println!("[OK] Network: virtio-net ready");
-            let stack = net::init(&net_dev);
-            serial_println!("[OK] Network: smoltcp TCP/IP stack ready");
-            println!("Network: 10.0.2.15/24 via virtio-net");
-            // Stack is initialized — will be used by HTTP client in Phase 3
-            core::mem::forget(stack); // Keep alive (static lifetime workaround)
-        }
-        None => {
-            serial_println!("[WARN] No virtio-net device found");
-            println!("Network: not available");
-        }
-    }
-    println!();
-
-    // Initialize the async executor and run boot tasks
-    serial_println!("[OK] Async executor ready");
-
-    let mut executor = task::simple_executor::SimpleExecutor::new();
-    executor.spawn(task::Task::new(boot_message()));
-    #[cfg(not(test))]
-    executor.spawn(task::Task::new(keyboard::input_loop()));
-    executor.run();
-
     #[cfg(test)]
     test_main();
+
+    #[cfg(not(test))]
+    {
+        println!("╔═══════════════════════════════════════════════════════════╗");
+        println!("║              PersonalOS - Assistant-Native OS             ║");
+        println!("║  \"The future of computing starts here.\" ⚔️                ║");
+        println!("╚═══════════════════════════════════════════════════════════╝");
+        println!();
+        println!("Kernel booted. Architecture: x86_64");
+        println!();
+
+        // Probe for network device and initialize TCP/IP stack
+        match virtio_net::VirtioNet::init() {
+            Some(net_dev) => {
+                serial_println!("[OK] Network: virtio-net ready");
+                let stack = net::init(&net_dev);
+                serial_println!("[OK] Network: smoltcp TCP/IP stack ready");
+                println!("Network: 10.0.2.15/24 via virtio-net");
+                // Stack is initialized — will be used by HTTP client in Phase 3
+                core::mem::forget(stack); // Keep alive (static lifetime workaround)
+            }
+            None => {
+                serial_println!("[WARN] No virtio-net device found");
+                println!("Network: not available");
+            }
+        }
+        println!();
+
+        // Initialize the async executor and run boot tasks
+        serial_println!("[OK] Async executor ready");
+
+        let mut executor = task::simple_executor::SimpleExecutor::new();
+        executor.spawn(task::Task::new(boot_message()));
+        executor.spawn(task::Task::new(keyboard::input_loop()));
+        executor.run();
+    }
 
     loop {
         x86_64::instructions::hlt();
