@@ -110,16 +110,4 @@ impl LlmBackend for LocalLlamaBackend {
     }
 }
 
-/// Example usage:
-/// ```
-/// let mut backend = LocalLlamaBackend::new();
-/// backend.set_model_path("/models/llama-3.1-70b-q4.gguf");
-/// backend.initialize()?;
-/// let response = backend.query("What is the meaning of life?")?;
-/// println!("{}", response.text);
-/// ```
-/// 
-/// Performance targets (RTX 4090):
-/// - Llama 3.1 70B (4-bit): 40-50 tok/s
-/// - Llama 3.1 13B: 120+ tok/s
-/// - Llama 3.2 3B: 200+ tok/s
+

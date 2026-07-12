@@ -16,8 +16,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install Rust nightly
-        uses: dtolnay/rust-toolchain@nightly
+        uses: dtolnay/rust-toolchain@master
         with:
+          toolchain: nightly-2026-06-12
           components: rust-src, llvm-tools-preview
 
       - name: Install bootimage
@@ -38,8 +39,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install Rust nightly
-        uses: dtolnay/rust-toolchain@nightly
+        uses: dtolnay/rust-toolchain@master
         with:
+          toolchain: nightly-2026-06-12
           components: rust-src, llvm-tools-preview
 
       - name: Install bootimage
@@ -60,8 +62,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install Rust nightly
-        uses: dtolnay/rust-toolchain@nightly
+        uses: dtolnay/rust-toolchain@master
         with:
+          toolchain: nightly-2026-06-12
           components: rust-src, llvm-tools-preview, clippy
 
       - name: Clippy

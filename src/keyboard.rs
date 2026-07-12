@@ -5,6 +5,7 @@
 /// one at a time. This is the kernel's first real I/O bridge:
 /// hardware interrupt → buffer → async task → user interaction.
 
+use crate::serial_println;
 use alloc::string::String;
 use conquer_once::spin::OnceCell;
 use crossbeam_queue::ArrayQueue;

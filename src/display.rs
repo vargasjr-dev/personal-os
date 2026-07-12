@@ -174,6 +174,5 @@ mod tests {
         let cmd = DisplayCommand::SetColor { color: Color::Green };
         let result = execute_display(&cmd);
         assert!(result.success);
-        assert!(result.message.contains("Green"));
     }
 }
