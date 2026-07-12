@@ -151,12 +151,16 @@ pub fn strip_markers(response: &str) -> String {
 }
 
 fn append_clean_text(output: &mut String, text: &str, pending_space: &mut bool) {
-    for word in text.split_whitespace() {
+    for ch in text.chars() {
+        if ch.is_whitespace() {
+            *pending_space = true;
+            continue;
+        }
         if *pending_space && !output.is_empty() {
             output.push(' ');
         }
-        output.push_str(word);
-        *pending_space = true;
+        output.push(ch);
+        *pending_space = false;
     }
 }
 
