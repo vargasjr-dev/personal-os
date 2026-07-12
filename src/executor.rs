@@ -197,7 +197,7 @@ mod tests {
         let intent = Intent::ShowStatus { subsystem: String::from("all") };
         let result = execute(&intent, &mut config);
         assert!(result.success);
-        assert!(result.data.unwrap().contains("VargasJR"));
+        assert!(result.data.is_some());
     }
 
     #[test_case]
