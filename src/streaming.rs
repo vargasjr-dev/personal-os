@@ -130,24 +130,23 @@ pub fn parse_sse_event(event_type: &str, data: &str) -> StreamEvent {
 /// Handles the full `event: ...\ndata: ...\n\n` format.
 pub fn parse_stream(body: &str) -> Vec<StreamEvent> {
     let mut events = Vec::new();
-    let mut current_event = String::new();
-    let mut current_data = String::new();
+    let mut current_event: Option<&str> = None;
+    let mut current_data: Option<&str> = None;
 
     for line in body.lines() {
         if let Some(event) = line.strip_prefix("event: ") {
-            current_event = String::from(event.trim());
+            current_event = Some(event.trim());
         } else if let Some(data) = line.strip_prefix("data: ") {
-            current_data = String::from(data.trim());
-        } else if line.is_empty() && !current_event.is_empty() {
-            events.push(parse_sse_event(&current_event, &current_data));
-            current_event.clear();
-            current_data.clear();
+            current_data = Some(data.trim());
+        } else if line.is_empty() {
+            if let Some(event) = current_event.take() {
+                events.push(parse_sse_event(event, current_data.take().unwrap_or("")));
+            }
         }
     }
 
-    // Handle trailing event without final blank line
-    if !current_event.is_empty() {
-        events.push(parse_sse_event(&current_event, &current_data));
+    if let Some(event) = current_event {
+        events.push(parse_sse_event(event, current_data.unwrap_or("")));
     }
 
     events
