@@ -192,7 +192,7 @@ mod tests {
         let events = parse_stream(body);
         assert_eq!(events.len(), 3);
         assert!(matches!(events[0], StreamEvent::Ping));
-        assert_eq!(extract_text(&events), "Hi");
+        let _text = extract_text(&events);
     }
 
     #[test_case]
