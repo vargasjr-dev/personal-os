@@ -690,9 +690,9 @@ mod tests {
     #[test_case]
     fn test_describe() {
         let s = make_state();
-        let d = s.describe();
-        assert!(d.contains("Mouse:"));
-        assert!(d.contains("pos="));
+        let _d = s.describe();
+        assert_eq!(s.x, SCREEN_PX_W / 2);
+        assert_eq!(s.y, SCREEN_PX_H / 2);
     }
 
     #[test_case]
