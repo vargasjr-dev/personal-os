@@ -126,27 +126,38 @@ pub fn parse_intent(response: &str) -> Intent {
 
 /// Strip intent markers from response text for clean display.
 pub fn strip_markers(response: &str) -> String {
-    let mut result = String::from(response);
+    let mut result = String::new();
+    let mut rest = response;
+    let mut pending_space = false;
 
-    // Remove all [INTENT:...] markers
-    while let Some(start) = result.find("[INTENT:") {
-        if let Some(end) = result[start..].find(']') {
-            let marker_end = start + end + 1;
-            result = format!(
-                "{}{}",
-                &result[..start],
-                &result[marker_end..]
-            );
+    while !rest.is_empty() {
+        if let Some(start) = rest.find("[INTENT:") {
+            append_clean_text(&mut result, &rest[..start], &mut pending_space);
+            let after = &rest[start + "[INTENT:".len()..];
+            match after.find(']') {
+                Some(end) => rest = &after[end + 1..],
+                None => {
+                    append_clean_text(&mut result, rest, &mut pending_space);
+                    break;
+                }
+            }
         } else {
+            append_clean_text(&mut result, rest, &mut pending_space);
             break;
         }
     }
 
-    // Clean up double spaces / leading/trailing whitespace
-    while let Some(index) = result.find("  ") {
-        result.replace_range(index..index + 2, " ");
-    }
     result.trim().into()
+}
+
+fn append_clean_text(output: &mut String, text: &str, pending_space: &mut bool) {
+    for word in text.split_whitespace() {
+        if *pending_space && !output.is_empty() {
+            output.push(' ');
+        }
+        output.push_str(word);
+        *pending_space = true;
+    }
 }
 
 /// Generate the system prompt that tells Claude what intents are available.
