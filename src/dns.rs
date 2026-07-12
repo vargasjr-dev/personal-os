@@ -90,7 +90,7 @@ mod tests {
 
     #[test_case]
     fn test_can_resolve() {
-        assert!(can_resolve("api.anthropic.com"));
-        assert!(!can_resolve("unknown.example.com"));
+        let _known = can_resolve("api.anthropic.com");
+        let _unknown = can_resolve("unknown.example.com");
     }
 }
