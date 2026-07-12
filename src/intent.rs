@@ -143,6 +143,9 @@ pub fn strip_markers(response: &str) -> String {
     }
 
     // Clean up double spaces / leading/trailing whitespace
+    while let Some(index) = result.find("  ") {
+        result.replace_range(index..index + 2, " ");
+    }
     result.trim().into()
 }
 
