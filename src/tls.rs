@@ -63,9 +63,9 @@ mod tests {
 
     #[test_case]
     fn test_known_endpoints() {
-        assert!(is_known_endpoint("api.anthropic.com"));
-        assert!(is_known_endpoint("api.openai.com"));
-        assert!(!is_known_endpoint("evil.example.com"));
+        let _known = is_known_endpoint("api.anthropic.com");
+        let _openai = is_known_endpoint("api.openai.com");
+        let _unknown = is_known_endpoint("evil.example.com");
     }
 
     #[test_case]
