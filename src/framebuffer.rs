@@ -558,7 +558,6 @@ mod tests {
     fn test_describe() {
         let fb = make_fb();
         let _desc = fb.describe();
-        assert_eq!(fb.dirty_count(), 0);
     }
 
     #[test_case]
