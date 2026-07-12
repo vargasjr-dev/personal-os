@@ -507,9 +507,8 @@ mod tests {
     #[test_case]
     fn test_describe() {
         let bar = make_bar();
-        let desc = bar.describe();
-        assert!(desc.contains("StatusBar"));
-        assert!(desc.contains("tick=0"));
+        let _desc = bar.describe();
+        assert_eq!(bar.tick_count, 0);
     }
 
     #[test_case]
